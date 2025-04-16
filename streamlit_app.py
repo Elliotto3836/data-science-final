@@ -59,7 +59,8 @@ app_mode = st.sidebar.selectbox("Select a page",["Business Case and Data Present
 if app_mode == "Business Case and Data Presentation":
     rain(emoji="🛩️",font_size=54,falling_speed=5,animation_length="10",)
     st.markdown("# :blue[📊 Introduction:]")
-    st.write("We will be analyzing the Airplane data, we will be predicting whether or not a customer is a loyal or disloyal customer.")
+    st.write("We will be analyzing the Airplane data, we will be predicting whether or not a customer will be satisfied or not. This would be extremely" \
+    "helpful for an airpline company to determine what they need to prioritize.")
     num = st.slider("Select number of rows to view", min_value=5, max_value=100, value=10)
     st.dataframe(df_original.head(num))
     st.write("(From this point on, we will convert the non-numerical variables to numerical variables through the label encoder function for the purposes of data presentation and model prediction.)")
@@ -112,12 +113,12 @@ if app_mode == "Logistic Regression":
    
     st.dataframe(df.head(5))
     fig2, ax = plt.subplots()
-    sns.countplot(data=df,x="satisfaction")
+    sns.countplot(data=df,x="Satisfaction")
     st.pyplot(fig2)
     
     
     df2= df.drop('id',axis=1)
-    default_vars = ['Age','satisfaction','Type of Travel']
+    default_vars = ['Age','Satisfaction','Type of Travel']
     all_vars = ['Gender',
                'Customer Type',
                'Age',
@@ -140,7 +141,7 @@ if app_mode == "Logistic Regression":
                'Cleanliness',
                'Departure Delay in Minutes',
                'Arrival Delay in Minutes',
-               'satisfaction']
+               'Satisfaction']
     other_vars = [var for var in all_vars if var not in default_vars]
     additional_vars = st.multiselect(
     "Add more variables to the correlation matrix:",
@@ -152,17 +153,10 @@ if app_mode == "Logistic Regression":
     fig, ax = plt.subplots(figsize=(fig_width, fig_height))
     sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", linewidths=0.5, ax=ax)
     st.pyplot(fig)
-
-    
-    
-    
     
     df2 = df2.dropna()
-    X = df2.drop("satisfaction",axis=1)
-    y = df2["satisfaction"]
-   
-   
-   
+    X = df2.drop("Satisfaction",axis=1)
+    y = df2["Satisfaction"]
    
     from sklearn.model_selection import train_test_split
     X_train, X_test, y_train, y_test=train_test_split(X,y,test_size=0.2)
@@ -181,8 +175,8 @@ if app_mode == "Decision Tree 🌳":
     # Prepare features and target
 
     #First just doing 3 and 10 as examples. Since 3 is a good graph and 10 is the most accurate
-    X_tree = df.drop(["satisfaction"], axis=1)
-    y_tree = df["satisfaction"]
+    X_tree = df.drop(["Satisfaction"], axis=1)
+    y_tree = df["Satisfaction"]
 
     # Train-test split
     X_train_tree, X_test_tree, y_train_tree, y_test_tree = train_test_split(X_tree, y_tree, test_size=0.2, random_state=1)
