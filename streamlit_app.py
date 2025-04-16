@@ -2,22 +2,28 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-import seaborn as sns
+from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier # Import Decision Tree Classifier
-from sklearn.model_selection import train_test_split # Import train_test_split function
-from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
+
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import metrics
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split, GridSearchCV
+import graphviz
+
+
+#git add .
+#git commit -am "Message here"
+#git push
 
 #streamlit run streamlit_app.py --server.enableCORS false --server.enableXsrfProtection false
 
 import mlflow
 import dagshub
-
-
 
 from sklearn.tree import export_graphviz
 
@@ -75,33 +81,77 @@ if app_mode == "Logistic Regression":
     st.write(classification_report(predictions,y_test))
 
 
-    
-
-
-
-
 
 if app_mode == "Decision Tree 🌳":
-    st.markdown("# :blue[📊 Introduction:]")
-    X_tree = df.drop(["satisfaction"],axis=1)
-    y_tree = df["satisfaction"] # Target variable
+    st.markdown("# :blue[Decision Tree 🌳]")
+    
+    # Prepare features and target
+    X_tree = df.drop(["satisfaction"], axis=1)
+    y_tree = df["satisfaction"]
 
+    # Train-test split
     X_train_tree, X_test_tree, y_train_tree, y_test_tree = train_test_split(X_tree, y_tree, test_size=0.2, random_state=1)
-    #init
-    clf = DecisionTreeClassifier(max_depth=3)
-    #train
-    clf = clf.fit(X_train_tree,y_train_tree)
-    #predict
-    y_pred_tree = clf.predict(X_test_tree)
 
-    st.write("Accuracy:",metrics.accuracy_score(y_test_tree, y_pred_tree))
+    # Hyperparameter tuning: searching for best max_depth
+    param_grid = {"max_depth": list(range(1, 21))}  # Search from depth 1 to 20
+    grid_search = GridSearchCV(
+        DecisionTreeClassifier(random_state=1),
+        param_grid,
+        cv=5,
+        scoring='accuracy'
+    )
+    grid_search.fit(X_train_tree, y_train_tree)
 
+    # Use the best model from grid search
+    best_clf = grid_search.best_estimator_
+    y_pred_tree = best_clf.predict(X_test_tree)
+
+    # Display results
+    st.write("Best max_depth:", grid_search.best_params_["max_depth"])
+    st.write("Accuracy with best max_depth:", metrics.accuracy_score(y_test_tree, y_pred_tree))
+    st.write("For this page we will be predicting whether someone will return to an airline based on a decision tree.")
+    st.write("This is the decision tree for the more efficient max depth of 10:")
+
+    # Visualize decision tree
     feature_names = X_tree.columns
     feature_cols = X_test_tree.columns
-    dot_data = export_graphviz(clf, out_file=None,feature_names=feature_cols,class_names=['0','1'],filled=True, rounded=True,special_characters=True)
+    dot_data = export_graphviz(
+        best_clf,
+        out_file=None,
+        feature_names=feature_cols,
+        class_names=['0', '1'],
+        filled=True,
+        rounded=True,
+        special_characters=True
+    )
     
+
     graph = graphviz.Source(dot_data)
     st.graphviz_chart(graph)
+
+    #doing max depth of 3
+    clf_depth3 = DecisionTreeClassifier(max_depth=3, random_state=1)
+    clf_depth3.fit(X_train_tree, y_train_tree)
+    y_pred_depth3 = clf_depth3.predict(X_test_tree)
+
+    # Display results
+    st.markdown("Decision Tree with max_depth = 3")
+    st.write("Accuracy:", metrics.accuracy_score(y_test_tree, y_pred_depth3))
+
+    # Visualize tree
+    dot_data_depth3 = export_graphviz(
+        clf_depth3,
+        out_file=None,
+        feature_names=X_test_tree.columns,
+        class_names=['0', '1'],
+        filled=True,
+        rounded=True,
+        special_characters=True
+    )
+    graph_depth3 = graphviz.Source(dot_data_depth3)
+    st.graphviz_chart(graph_depth3)
+
+
 
 if app_mode == "Feature Importance and Driving Variables":
     st.dataframe(df.head(5))

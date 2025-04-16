@@ -32,6 +32,7 @@ gql==3.5.2
 graphene==3.4.3
 graphql-core==3.2.4
 graphql-relay==3.2.0
+graphviz==0.20.3
 greenlet==3.1.1
 gunicorn==23.0.0
 h11==0.14.0
@@ -89,6 +90,7 @@ rsa==4.9
 s3transfer==0.11.4
 scikit-learn==1.6.1
 scipy==1.15.2
+seaborn==0.13.2
 semver==3.0.4
 six==1.17.0
 smmap==5.0.2
