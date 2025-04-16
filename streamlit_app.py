@@ -63,16 +63,61 @@ if app_mode == "Data Visualization":
     st.dataframe(df.head(5))
 
 if app_mode == "Logistic Regression":
+   
     st.dataframe(df.head(5))
+    fig2, ax = plt.subplots()
     sns.countplot(data=df,x="satisfaction")
-    st.pyplot()
+    st.pyplot(fig2)
+    
+    
     df2= df.drop('id',axis=1)
-    fig, ax = plt.subplots(figsize=(60, 50)) 
-    sns.heatmap(df2.corr(), annot=True, ax=ax)
+    default_vars = ['Age','satisfaction','Type of Travel']
+    all_vars = ['Gender',
+               'Customer Type',
+               'Age',
+               'Type of Travel',
+                'Class',
+               'Flight Distance',
+               'Inflight wifi service',
+               'Departure/Arrival time convenient',
+               'Ease of Online booking',
+               'Gate location',
+               'Food and drink',
+               'Online boarding',
+               'Seat comfort',
+              'Inflight entertainment',
+               'On-board service',
+               'Leg room service',
+               'Baggage handling',
+               'Checkin service',
+               'Inflight service',
+               'Cleanliness',
+               'Departure Delay in Minutes',
+               'Arrival Delay in Minutes',
+               'satisfaction']
+    other_vars = [var for var in all_vars if var not in default_vars]
+    additional_vars = st.multiselect(
+    "Add more variables to the correlation matrix:",
+    options=other_vars)
+    selected_vars = default_vars + additional_vars
+    fig_width = max(8,len(selected_vars))
+    fig_height = max(6,len(selected_vars))
+    corr_matrix = df2[selected_vars].corr()
+    fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+    sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", linewidths=0.5, ax=ax)
     st.pyplot(fig)
+
+    
+    
+    
+    
     df2 = df2.dropna()
     X = df2.drop("satisfaction",axis=1)
     y = df2["satisfaction"]
+   
+   
+   
+   
     from sklearn.model_selection import train_test_split
     X_train, X_test, y_train, y_test=train_test_split(X,y,test_size=0.2)
     log = LogisticRegression()
