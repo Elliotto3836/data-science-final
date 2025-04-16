@@ -20,6 +20,8 @@ import graphviz
 #git commit -am "Message here"
 #git push
 
+#Make sure to import everything
+
 #streamlit run streamlit_app.py --server.enableCORS false --server.enableXsrfProtection false
 
 import mlflow
@@ -102,9 +104,28 @@ if app_mode == "Decision Tree 🌳":
     )
     grid_search.fit(X_train_tree, y_train_tree)
 
+
     # Use the best model from grid search
     best_clf = grid_search.best_estimator_
     y_pred_tree = best_clf.predict(X_test_tree)
+    
+
+    # Get results from GridSearchCV
+    results = grid_search.cv_results_
+    max_depths = results["param_max_depth"]
+    mean_scores = results["mean_test_score"]
+
+    fig, ax = plt.subplots()
+    ax.set_xticks(range(min(max_depths), max(max_depths)+1))
+    ax.plot(max_depths, mean_scores, marker='o')
+    ax.set_title("Decision Tree Accuracy vs. Max Depth")
+    ax.set_xlabel("Max Depth")
+    ax.set_ylabel("Cross-Validated Accuracy")
+    ax.grid(True)
+
+    # Show in Streamlit
+    st.pyplot(fig)
+
 
     # Display results
     st.write("Best max_depth:", grid_search.best_params_["max_depth"])
@@ -156,6 +177,7 @@ if app_mode == "Decision Tree 🌳":
 if app_mode == "Feature Importance and Driving Variables":
     st.dataframe(df.head(5))
 
-if app_mode == "Hyperparameter Tuning":
+if app_mode == "Dagshub + MLFlow":
+
     st.dataframe(df.head(5))
 
