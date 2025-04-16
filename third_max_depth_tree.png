@@ -1,0 +1,33 @@
+digraph Tree {
+node [shape=box, style="filled, rounded", color="black", fontname="helvetica"] ;
+edge [fontname="helvetica"] ;
+0 [label=<Online boarding &le; 3.5<br/>gini = 0.493<br/>samples = 20780<br/>value = [11608, 9172]<br/>class = 0>, fillcolor="#fae5d5"] ;
+1 [label=<Inflight wifi service &le; 0.5<br/>gini = 0.262<br/>samples = 10302<br/>value = [8702, 1600]<br/>class = 0>, fillcolor="#ea985d"] ;
+0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+2 [label=<Cleanliness &le; 0.5<br/>gini = 0.01<br/>samples = 384<br/>value = [2, 382]<br/>class = 1>, fillcolor="#3a9ee5"] ;
+1 -> 2 ;
+3 [label=<gini = 0.0<br/>samples = 2<br/>value = [2, 0]<br/>class = 0>, fillcolor="#e58139"] ;
+2 -> 3 ;
+4 [label=<gini = 0.0<br/>samples = 382<br/>value = [0, 382]<br/>class = 1>, fillcolor="#399de5"] ;
+2 -> 4 ;
+5 [label=<Inflight wifi service &le; 3.5<br/>gini = 0.215<br/>samples = 9918<br/>value = [8700, 1218]<br/>class = 0>, fillcolor="#e99355"] ;
+1 -> 5 ;
+6 [label=<gini = 0.125<br/>samples = 8946<br/>value = [8349, 597]<br/>class = 0>, fillcolor="#e78a47"] ;
+5 -> 6 ;
+7 [label=<gini = 0.461<br/>samples = 972<br/>value = [351, 621]<br/>class = 1>, fillcolor="#a9d4f4"] ;
+5 -> 7 ;
+8 [label=<Type of Travel &le; 0.5<br/>gini = 0.401<br/>samples = 10478<br/>value = [2906, 7572]<br/>class = 1>, fillcolor="#85c3ef"] ;
+0 -> 8 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+9 [label=<Inflight entertainment &le; 3.5<br/>gini = 0.254<br/>samples = 8363<br/>value = [1251, 7112]<br/>class = 1>, fillcolor="#5caeea"] ;
+8 -> 9 ;
+10 [label=<gini = 0.47<br/>samples = 2115<br/>value = [799, 1316]<br/>class = 1>, fillcolor="#b1d8f5"] ;
+9 -> 10 ;
+11 [label=<gini = 0.134<br/>samples = 6248<br/>value = [452, 5796]<br/>class = 1>, fillcolor="#48a5e7"] ;
+9 -> 11 ;
+12 [label=<Inflight wifi service &le; 4.5<br/>gini = 0.34<br/>samples = 2115<br/>value = [1655, 460]<br/>class = 0>, fillcolor="#eca470"] ;
+8 -> 12 ;
+13 [label=<gini = 0.217<br/>samples = 1889<br/>value = [1655, 234]<br/>class = 0>, fillcolor="#e99355"] ;
+12 -> 13 ;
+14 [label=<gini = 0.0<br/>samples = 226<br/>value = [0, 226]<br/>class = 1>, fillcolor="#399de5"] ;
+12 -> 14 ;
+}

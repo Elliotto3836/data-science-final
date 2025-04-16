@@ -5,6 +5,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
+from streamlit_extras.let_it_rain import rain
+from ydata_profiling import ProfileReport
+import streamlit.components.v1 as components
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import metrics
@@ -54,10 +57,53 @@ app_mode = st.sidebar.selectbox("Select a page",["Business Case and Data Present
 
 
 if app_mode == "Business Case and Data Presentation":
+    rain(emoji="🛩️",font_size=54,falling_speed=5,animation_length="10",)
     st.markdown("# :blue[📊 Introduction:]")
-    st.write("We will be analyzing the Airplane data, we will be predicting whether or not a customer is a loyal or disloyal customer")
+    st.write("We will be analyzing the Airplane data, we will be predicting whether or not a customer is a loyal or disloyal customer.")
+    num = st.slider("Select number of rows to view", min_value=5, max_value=100, value=10)
+    st.dataframe(df_original.head(num))
+    st.write("(From this point on, we will convert the non-numerical variables to numerical variables through the label encoder function for the purposes of data presentation and model prediction.)")
+    st.markdown("## :blue[🔍 Description of the Data]")
+    st.dataframe(df.describe())
+    st.markdown("## :blue[Variables Used]")
 
-    st.dataframe(df_original.head(5))
+    features = {
+        ":blue[Gender]": "",
+        ":blue[Customer Type]": "",
+        ":blue[Age]": "",
+        ":blue[Type of Travel]": "",
+        ":blue[Class]": "",
+        ":blue[Flight Distance]": "",
+        ":blue[Inflight wifi service]": "",
+        ":blue[Departure/Arrival time convenient]": "",
+        ":blue[Ease of Online booking]": "",
+        ":blue[Gate location]": "",
+        ":blue[Food and drink]": "",
+        ":blue[Online boarding]": "",
+        ":blue[Seat comfort]": "",
+        ":blue[Inflight entertainment]": "",
+        ":blue[On-board service]": "",
+        ":blue[Leg room service]": "",
+        ":blue[Baggage handling]": "",
+        ":blue[Checkin service]": "",
+        ":blue[Inflight service]": "",
+        ":blue[Cleanliness]": "",
+        ":blue[Departure Delay in Minutes]": "",
+        ":blue[Arrival Delay in Minutes]": "",
+        ":blue[Satisfaction]": ""
+    }
+    
+    for key, value in features.items():
+        st.markdown(f"- **{key}** - {value}")
+
+    st.markdown("## :blue[Rows, Columns]")
+    st.write(df.shape)
+
+    st.markdown("## :blue[Pandas Profiling Report]")
+    
+    profile = ProfileReport(df, minimal=True)
+    html = profile.to_html()
+    components.html(html, height=800, scrolling=True) 
 
 if app_mode == "Data Visualization":
     st.dataframe(df.head(5))
@@ -130,93 +176,105 @@ if app_mode == "Logistic Regression":
 
 
 if app_mode == "Decision Tree 🌳":
+
     st.markdown("# :blue[Decision Tree 🌳]")
-    
-    # Prepare features and target
-    X_tree = df.drop(["satisfaction"], axis=1)
-    y_tree = df["satisfaction"]
 
-    # Train-test split
-    X_train_tree, X_test_tree, y_train_tree, y_test_tree = train_test_split(X_tree, y_tree, test_size=0.2, random_state=1)
+    if st.button("Run Decision Tree Hyperparameter Tuning"):
+        # Initialize DagsHub and MLflow
+        dagshub.init(repo_owner='Elliotto3836', repo_name='Final', mlflow=True)
 
-    # Hyperparameter tuning: searching for best max_depth
-    param_grid = {"max_depth": list(range(1, 21))}  # Search from depth 1 to 20
-    grid_search = GridSearchCV(
-        DecisionTreeClassifier(random_state=1),
-        param_grid,
-        cv=5,
-        scoring='accuracy'
-    )
-    grid_search.fit(X_train_tree, y_train_tree)
+        # Prepare features and target
+        X_tree = df.drop(["satisfaction"], axis=1)
+        y_tree = df["satisfaction"]
 
+        # Train-test split
+        X_train_tree, X_test_tree, y_train_tree, y_test_tree = train_test_split(X_tree, y_tree, test_size=0.2, random_state=1)
 
-    # Use the best model from grid search
-    best_clf = grid_search.best_estimator_
-    y_pred_tree = best_clf.predict(X_test_tree)
-    
-
-    # Get results from GridSearchCV
-    results = grid_search.cv_results_
-    max_depths = results["param_max_depth"]
-    mean_scores = results["mean_test_score"]
-
-    fig, ax = plt.subplots()
-    ax.set_xticks(range(min(max_depths), max(max_depths)+1))
-    ax.plot(max_depths, mean_scores, marker='o')
-    ax.set_title("Decision Tree Accuracy vs. Max Depth")
-    ax.set_xlabel("Max Depth")
-    ax.set_ylabel("Cross-Validated Accuracy")
-    ax.grid(True)
-
-    # Show in Streamlit
-    st.pyplot(fig)
+        # Hyperparameter tuning: searching for best max_depth
+        param_grid = {"max_depth": list(range(1, 21))}  # Search from depth 1 to 20
+        grid_search = GridSearchCV(
+            DecisionTreeClassifier(random_state=1),
+            param_grid,
+            cv=5,
+            scoring='accuracy'
+        )
 
 
-    # Display results
-    st.write("Best max_depth:", grid_search.best_params_["max_depth"])
-    st.write("Accuracy with best max_depth:", metrics.accuracy_score(y_test_tree, y_pred_tree))
-    st.write("For this page we will be predicting whether someone will return to an airline based on a decision tree.")
-    st.write("This is the decision tree for the more efficient max depth of 10:")
+        # Start an MLflow experiment
+        mlflow.start_run()
 
-    # Visualize decision tree
-    feature_names = X_tree.columns
-    feature_cols = X_test_tree.columns
-    dot_data = export_graphviz(
-        best_clf,
-        out_file=None,
-        feature_names=feature_cols,
-        class_names=['0', '1'],
-        filled=True,
-        rounded=True,
-        special_characters=True
-    )
-    
+        grid_search.fit(X_train_tree, y_train_tree)
 
-    graph = graphviz.Source(dot_data)
-    st.graphviz_chart(graph)
+        # Loop through each value of max_depth and create a new nested run for each iteration
+        for max_depth in param_grid["max_depth"]:
+            name = "Decision Tree " + str(max_depth)
+            with mlflow.start_run(nested=True,run_name=name):  # This creates a new nested run for each max_depth
+                # Create and fit the model with the current max_depth
+                model = DecisionTreeClassifier(max_depth=max_depth, random_state=1)
+                model.fit(X_train_tree, y_train_tree)
+                y_pred_tree = model.predict(X_test_tree)
 
-    #doing max depth of 3
-    clf_depth3 = DecisionTreeClassifier(max_depth=3, random_state=1)
-    clf_depth3.fit(X_train_tree, y_train_tree)
-    y_pred_depth3 = clf_depth3.predict(X_test_tree)
+                # Metrics
+                mae = mean_absolute_error(y_test_tree, y_pred_tree)
+                mse = mean_squared_error(y_test_tree, y_pred_tree)
+                rmse = np.sqrt(mse)
+                accuracy = metrics.accuracy_score(y_test_tree, y_pred_tree)
 
-    # Display results
-    st.markdown("Decision Tree with max_depth = 3")
-    st.write("Accuracy:", metrics.accuracy_score(y_test_tree, y_pred_depth3))
+                # Log parameters and metrics
+                mlflow.log_param("model_name", "DecisionTree")
+                mlflow.log_param("max_depth", max_depth)
+                mlflow.log_params(model.get_params())
+                mlflow.log_metric("accuracy", accuracy)
+                mlflow.log_metric("mae", mae)
+                mlflow.log_metric("mse", mse)
+                mlflow.log_metric("rmse", rmse)
 
-    # Visualize tree
-    dot_data_depth3 = export_graphviz(
-        clf_depth3,
-        out_file=None,
-        feature_names=X_test_tree.columns,
-        class_names=['0', '1'],
-        filled=True,
-        rounded=True,
-        special_characters=True
-    )
-    graph_depth3 = graphviz.Source(dot_data_depth3)
-    st.graphviz_chart(graph_depth3)
+                # Log model
+                mlflow.sklearn.log_model(model, artifact_path="model")
 
+                # Display metrics in Streamlit
+                st.markdown(f'<p class="sub-title">Decision Tree with max_depth={max_depth}</p>', unsafe_allow_html=True)
+                st.write(f"MAE: {mae:.3f}")
+                st.write(f"MSE: {mse:.3f}")
+                st.write(f"RMSE: {rmse:.3f}")
+                st.write(f"Accuracy: {accuracy:.3f}")
+
+                # Visualize decision tree
+                dot_data = export_graphviz(
+                    model,
+                    out_file=None,
+                    feature_names=X_tree.columns,
+                    class_names=['0', '1'],
+                    filled=True,
+                    rounded=True,
+                    special_characters=True
+                )
+
+                graph = graphviz.Source(dot_data)
+                st.graphviz_chart(graph)
+
+        # End the MLflow run
+        mlflow.end_run()
+
+        best_max_depth = grid_search.best_params_["max_depth"]
+        best_accuracy = grid_search.best_score_
+        st.write("Best max_depth:", best_max_depth)
+        st.write("Best accuracy from GridSearch:", best_accuracy)
+
+        results = grid_search.cv_results_
+        max_depths = results["param_max_depth"]
+        mean_scores = results["mean_test_score"]
+
+        fig, ax = plt.subplots()
+        ax.set_xticks(range(min(max_depths), max(max_depths) + 1))
+        ax.plot(max_depths, mean_scores, marker='o')
+        ax.set_title("Decision Tree Accuracy vs. Max Depth")
+        ax.set_xlabel("Max Depth")
+        ax.set_ylabel("Cross-Validated Accuracy")
+        ax.grid(True)
+
+        # Show in Streamlit
+        st.pyplot(fig)
 
 
 if app_mode == "Feature Importance and Driving Variables":
