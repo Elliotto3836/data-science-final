@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
+import seaborn as sns
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-
+from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier # Import Decision Tree Classifier
 from sklearn.model_selection import train_test_split # Import train_test_split function
 from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
@@ -17,7 +17,7 @@ from sklearn.preprocessing import LabelEncoder
 import mlflow
 import dagshub
 
-import graphviz
+
 
 from sklearn.tree import export_graphviz
 
@@ -56,6 +56,30 @@ if app_mode == "Data Visualization":
 
 if app_mode == "Logistic Regression":
     st.dataframe(df.head(5))
+    sns.countplot(data=df,x="satisfaction")
+    st.pyplot()
+    df2= df.drop('id',axis=1)
+    fig, ax = plt.subplots(figsize=(60, 50)) 
+    sns.heatmap(df2.corr(), annot=True, ax=ax)
+    st.pyplot(fig)
+    df2 = df2.dropna()
+    X = df2.drop("satisfaction",axis=1)
+    y = df2["satisfaction"]
+    from sklearn.model_selection import train_test_split
+    X_train, X_test, y_train, y_test=train_test_split(X,y,test_size=0.2)
+    log = LogisticRegression()
+    log.fit(X_train,y_train)
+    predictions = log.predict(X_test)
+    
+    from sklearn.metrics import classification_report
+    st.write(classification_report(predictions,y_test))
+
+
+    
+
+
+
+
 
 if app_mode == "Decision Tree 🌳":
     st.markdown("# :blue[📊 Introduction:]")
