@@ -178,16 +178,84 @@ if app_mode == "Logistic Regression":
 if app_mode == "Decision Tree 🌳":
 
     st.markdown("# :blue[Decision Tree 🌳]")
+    # Prepare features and target
 
-    if st.button("Run Decision Tree Hyperparameter Tuning"):
+    #First just doing 3 and 10 as examples. Since 3 is a good graph and 10 is the most accurate
+    X_tree = df.drop(["satisfaction"], axis=1)
+    y_tree = df["satisfaction"]
+
+    # Train-test split
+    X_train_tree, X_test_tree, y_train_tree, y_test_tree = train_test_split(X_tree, y_tree, test_size=0.2, random_state=1)
+
+    model = DecisionTreeClassifier(max_depth=3, random_state=1)
+    model.fit(X_train_tree, y_train_tree)
+    y_pred_tree = model.predict(X_test_tree)
+
+    # Metrics
+    mae = mean_absolute_error(y_test_tree, y_pred_tree)
+    mse = mean_squared_error(y_test_tree, y_pred_tree)
+    rmse = np.sqrt(mse)
+    accuracy = metrics.accuracy_score(y_test_tree, y_pred_tree)
+
+    st.markdown("This is for max_depth = 3, just as an example")
+    st.success(f"Accuracy: {accuracy:.4f}")
+    st.success(f"mae: {mae:.4f}")
+    st.success(f"mse: {mse:.4f}")
+
+    dot_data = export_graphviz(
+    model,
+    out_file=None,
+    feature_names=X_tree.columns,
+    class_names=['0', '1'],
+    filled=True,
+    rounded=True,
+    special_characters=True)
+    
+    graph = graphviz.Source(dot_data)
+    st.graphviz_chart(graph)
+
+
+
+    #max depth 10
+
+    st.markdown("This is for max_depth = 10, which was the most accurate according to my hyperparameter tuning")
+
+
+    model = DecisionTreeClassifier(max_depth=10, random_state=1)
+    model.fit(X_train_tree, y_train_tree)
+    y_pred_tree = model.predict(X_test_tree)
+
+    # Metrics
+    mae = mean_absolute_error(y_test_tree, y_pred_tree)
+    mse = mean_squared_error(y_test_tree, y_pred_tree)
+    rmse = np.sqrt(mse)
+    accuracy = metrics.accuracy_score(y_test_tree, y_pred_tree)
+
+    st.success(f"Accuracy: {accuracy:.4f}")
+    st.success(f"mae: {mae:.4f}")
+    st.success(f"mse: {mse:.4f}")
+
+    dot_data = export_graphviz(
+    model,
+    out_file=None,
+    feature_names=X_tree.columns,
+    class_names=['0', '1'],
+    filled=True,
+    rounded=True,
+    special_characters=True)
+    
+    graph = graphviz.Source(dot_data)
+    st.graphviz_chart(graph)
+
+    st.image("DecisionTreeAccuracy.png")
+
+
+
+
+    if st.button("Run Full Decision Tree Hyperparameter Tuning with MLFlow + Dagshub"):
         # Initialize DagsHub and MLflow
         dagshub.init(repo_owner='Elliotto3836', repo_name='Final', mlflow=True)
 
-        # Prepare features and target
-        X_tree = df.drop(["satisfaction"], axis=1)
-        y_tree = df["satisfaction"]
-
-        # Train-test split
         X_train_tree, X_test_tree, y_train_tree, y_test_tree = train_test_split(X_tree, y_tree, test_size=0.2, random_state=1)
 
         # Hyperparameter tuning: searching for best max_depth
@@ -273,7 +341,6 @@ if app_mode == "Decision Tree 🌳":
         ax.set_ylabel("Cross-Validated Accuracy")
         ax.grid(True)
 
-        # Show in Streamlit
         st.pyplot(fig)
 
 
