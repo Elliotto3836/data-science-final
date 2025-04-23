@@ -53,7 +53,7 @@ for column in df.columns:
 
 
 
-app_mode = st.sidebar.selectbox("Select a page",["Business Case and Data Presentation","Data Visualization","Logistic Regression","Decision Tree 🌳","Feature Importance and Driving Variables","Hyperparameter Tuning"])
+app_mode = st.sidebar.selectbox("Select a page",["Business Case and Data Presentation","Data Visualization","Logistic Regression","Decision Tree 🌳","Feature Importance and Driving Variables","Hyperparameter Tuning","AI Explainability"])
 
 
 if app_mode == "Business Case and Data Presentation":
@@ -345,3 +345,37 @@ if app_mode == "Dagshub + MLFlow":
 
     st.dataframe(df.head(5))
 
+if app_mode == "AI Explainability":
+    import shap
+    from streamlit_shap import st_shap
+    import pandas as pd
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import StandardScaler
+
+    st.markdown("### AI Explainability ")
+
+    dfShap = df.dropna()
+
+    X = dfShap.drop("Satisfaction", axis=1)
+    y = dfShap["Satisfaction"]
+
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    X_train_SHAP, X_test_SHAP, y_train_SHAP, y_test_SHAP = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+    model = LogisticRegression(max_iter=1000, random_state=1)
+    model.fit(X_train_SHAP, y_train_SHAP)
+
+    explainer = shap.Explainer(model, X_train_SHAP)
+    shap_values = explainer(X_test_SHAP)
+
+    fig = plt.figure(figsize=(10, 6))
+    shap.summary_plot(shap_values.values, X_test_SHAP, feature_names=X.columns, plot_type="dot", show=False)
+
+    plt.title("Feature Importance for the Satisfaction Prediction (Logistic Regression)", fontsize=16)
+
+    st.pyplot(fig)
