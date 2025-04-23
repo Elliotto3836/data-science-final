@@ -164,8 +164,15 @@ if app_mode == "Logistic Regression":
     log.fit(X_train,y_train)
     predictions = log.predict(X_test)
     
-    from sklearn.metrics import classification_report
-    st.write(classification_report(predictions,y_test))
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import mean_absolute_error, r2_score, accuracy_score
+
+    accuracy = accuracy_score(y_test, predictions)
+
+    st.markdown("### Model Evaluation Metrics")
+
+    st.write(f"**Accuracy**: {accuracy:.4f}")
 
 
 
