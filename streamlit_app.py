@@ -1,13 +1,13 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from streamlit_extras.let_it_rain import rain
 from ydata_profiling import ProfileReport
 import streamlit.components.v1 as components
+from pycaret.classification import setup, compare_models, pull
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import metrics
@@ -32,13 +32,44 @@ import dagshub
 
 from sklearn.tree import export_graphviz
 
+#For the rainbow 
+st.markdown("""
+<style>
+@keyframes rainbow {
+  0%{color: red;}
+  14%{color: orange;}
+  28%{color: yellow;}
+  42%{color: green;}
+  57%{color: blue;}
+  71%{color: indigo;}
+  85%{color: violet;}
+  100%{color: red;}
+}
 
+.rainbow-text {
+  font-size: 48px;
+  font-weight: bold;
+  animation: rainbow 4s infinite;
+  text-align: center;
+}
 
-st.title("Data Science Final")
+/* Center the div itself */
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown('<div class="center"><div class="rainbow-text">Airline Satisfaction!</div></div>', unsafe_allow_html=True)
+
+st.markdown("<h1 style='text-align: center; color: skyblue;'>By Elliot, Katie, and Kanishk</h1>", unsafe_allow_html=True)
+
+st.image("HighQualityAirfrance.png")
 
 df_original = pd.read_csv("airline.csv")
-
-
 
 # Turns categorical variables into numbers
 #df is the one with numbers, original has the label
@@ -53,7 +84,7 @@ for column in df.columns:
 
 
 
-app_mode = st.sidebar.selectbox("Select a page",["Business Case and Data Presentation","Data Visualization","Logistic Regression","Decision Tree 🌳","Feature Importance and Driving Variables","Hyperparameter Tuning","AI Explainability"])
+app_mode = st.sidebar.selectbox("Select a page",["Business Case and Data Presentation","Data Visualization","Logistic Regression","Decision Tree 🌳","Feature Importance / AI Explainability", "AutoML with PyCaret"])
 
 
 if app_mode == "Business Case and Data Presentation":
@@ -158,14 +189,11 @@ if app_mode == "Logistic Regression":
     X = df2.drop("Satisfaction",axis=1)
     y = df2["Satisfaction"]
    
-    from sklearn.model_selection import train_test_split
     X_train, X_test, y_train, y_test=train_test_split(X,y,test_size=0.2)
     log = LogisticRegression()
     log.fit(X_train,y_train)
     predictions = log.predict(X_test)
     
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.model_selection import train_test_split
     from sklearn.metrics import mean_absolute_error, r2_score, accuracy_score
 
     accuracy = accuracy_score(y_test, predictions)
@@ -250,6 +278,8 @@ if app_mode == "Decision Tree 🌳":
 
     st.image("DecisionTreeAccuracy.png")
 
+    st.image("MLFlowData.png")
+
 
 
 
@@ -316,8 +346,7 @@ if app_mode == "Decision Tree 🌳":
                     class_names=['0', '1'],
                     filled=True,
                     rounded=True,
-                    special_characters=True
-                )
+                    special_characters=True)
 
                 graph = graphviz.Source(dot_data)
                 st.graphviz_chart(graph)
@@ -345,14 +374,12 @@ if app_mode == "Decision Tree 🌳":
         st.pyplot(fig)
 
 
-if app_mode == "Feature Importance and Driving Variables":
-    st.dataframe(df.head(5))
 
 if app_mode == "Dagshub + MLFlow":
 
     st.dataframe(df.head(5))
 
-if app_mode == "AI Explainability":
+if app_mode == "Feature Importance / AI Explainability":
     import shap
     from streamlit_shap import st_shap
     import pandas as pd
@@ -386,3 +413,35 @@ if app_mode == "AI Explainability":
     plt.title("Feature Importance for the Satisfaction Prediction (Logistic Regression)", fontsize=16)
 
     st.pyplot(fig)
+
+
+if app_mode == "AutoML with PyCaret":
+    st.title("🔮 AutoML with PyCaret")
+
+    st.markdown("""PyCaret will automatically try different models and then select the best one.""")
+
+    if st.button("Test Multiple Models using PyCaret"):
+
+        # Prepare the data
+        df_pycaret = df.dropna()  # PyCaret needs no missing values
+        df_pycaret = df_pycaret.drop(columns=['id'])  # Drop id column if still exists
+
+        # Setup PyCaret
+        clf = setup(data=df_pycaret, target='Satisfaction', session_id=123)
+
+        # Compare different models
+        best_model = compare_models()
+
+        # Show the comparison table
+        st.markdown("### 📋 Model Comparison Results")
+        comparison_df = pull()
+        #comparison_df = comparison_df[['Model', 'Accuracy', 'Kappa', 'TT', 'PT']]
+        comparison_df = comparison_df.sort_values(by='Accuracy', ascending=False)
+
+        st.dataframe(comparison_df)
+
+
+
+        # Show the best model
+        st.markdown("### 🏆 Best Model Found")
+        st.write(best_model)
