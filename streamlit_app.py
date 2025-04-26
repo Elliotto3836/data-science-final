@@ -5,9 +5,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from streamlit_extras.let_it_rain import rain
-from ydata_profiling import ProfileReport
 import streamlit.components.v1 as components
 from pycaret.classification import setup, compare_models, pull
+import os
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import metrics
@@ -133,9 +133,22 @@ if app_mode == "Business Case and Data Presentation":
 
     st.markdown("## :blue[Pandas Profiling Report]")
     
-    profile = ProfileReport(df, minimal=True)
-    html = profile.to_html()
-    components.html(html, height=800, scrolling=True) 
+    #profile = ProfileReport(df, minimal=True)
+    #profile.to_file("data_report.html")
+    #html = profile.to_html()
+
+    html_file_path = "data_report.html"
+
+    # Check if the file exists
+    if os.path.exists(html_file_path):
+        # Open the HTML file and read its content
+        with open(html_file_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+
+        # Display the HTML content in Streamlit
+        st.components.v1.html(html_content, height=800,scrolling=True)  # Adjust height as needed
+    else:
+        st.write("HTML report not found. Please generate the report first.") 
 
 if app_mode == "Data Visualization":
     st.dataframe(df.head(5))

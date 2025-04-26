@@ -202,6 +202,5 @@ wrapt==1.17.2
 wurlitzer==3.1.1
 xxhash==3.5.0
 yarl==1.20.0
-ydata-profiling==4.16.1
 yellowbrick==1.5
 zipp==3.21.0
