@@ -185,12 +185,36 @@ if app_mode == "Data Visualization":
         sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", linewidths=0.5, ax=ax)
         st.pyplot(fig)
 
+    # with countPlots:
+    #     st.markdown("## :blue[Bar Plot]")
+    #     varCount = st.selectbox("Choose a variable:", df2.columns, key="countplot_var")
+    #     fig, ax = plt.subplots(figsize=(10, 6))
+    #     sns.countplot(data=df2, x=varCount, ax=ax)
+    #     st.pyplot(fig)
     with countPlots:
         st.markdown("## :blue[Bar Plot]")
         varCount = st.selectbox("Choose a variable:", df2.columns, key="countplot_var")
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.countplot(data=df2, x=varCount, ax=ax)
-        st.pyplot(fig)
+    
+        if varCount == "Age":
+            # Bin the ages into groups of 5 years
+            bins = list(range(0, 101, 5))  # 0-4, 5-9, ..., 95-99, 100+
+            labels = [f"{i}-{i+4}" for i in bins[:-1]]
+            df2['Age Group'] = pd.cut(df2['Age'], bins=bins, labels=labels, right=False)
+        
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.countplot(data=df2, x='Age Group', ax=ax, order=labels)
+            ax.set_xlabel("Age Group")
+            ax.set_ylabel("Count")
+            plt.xticks(rotation=45)
+        else:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.countplot(data=df2, x=varCount, ax=ax)
+            plt.xticks(rotation=45)
+
+    st.pyplot(fig)
+
+
+
 
     with BoxAndWhisker:
         st.markdown("## :blue[Box and Whisker Plot]")
