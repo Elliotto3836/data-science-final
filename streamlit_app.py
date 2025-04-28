@@ -158,8 +158,59 @@ if app_mode == "Business Case and Data Presentation":
         st.write("HTML report not found. Please generate the report first.") 
 
 
+# if app_mode == "Data Visualization":
+#     st.dataframe(df.head(5))
 if app_mode == "Data Visualization":
-    st.dataframe(df.head(5))
+    st.markdown("# 📊 Data Visualization:")
+    st.write("Please find below graphs that further underscore significant details and correlations in our dataset.")
+
+
+    countPlots, HeatMap, BoxAndWhisker, PieChart, pairPlot = st.tabs(["Count Plots", "Heat Map", "Box and Whisker Plots", "Pie Charts", "Pairplot"])
+
+    df2 = df[['Age', 'Flight Distance', 'Inflight wifi service', 'Departure/Arrival time convenient', 'Ease of Online booking', 'Gate location', 'Food and drink', 'Online boarding', 'Seat comfort', 'Inflight entertainment', 'On-board service', 'Leg room service', 'Baggage handling', 'Checkin service', 'Inflight service', 'Cleanliness', 'Departure Delay in Minutes', 'Arrival Delay in Minutes']]
+    df3 = df_original[['Gender', 'Customer Type', 'Type of Travel', 'Class', 'Satisfaction']]
+
+    with pairPlot:
+        st.markdown("## :blue[Pairplot]")
+        fig = sns.pairplot(df2)
+        st.pyplot(fig)
+
+    with HeatMap:
+        st.markdown("## :blue[Correlation Heatmap]")
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.heatmap(df2.corr(), annot=True, cmap="Blues", linewidths=0.5, ax=ax)
+        
+        st.pyplot(fig)
+
+    with countPlots:
+        st.markdown("## :blue[Bar Plot]")
+        varCount = st.selectbox("Choose a variable:", df2.columns, key="countplot_var")
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.countplot(data=df2, x=varCount, ax=ax)
+        st.pyplot(fig)
+
+    with BoxAndWhisker:
+        st.markdown("## :blue[Box and Whisker Plot]")
+        
+        varBox = st.selectbox("Choose a variable:", df2.columns, key="boxplot_var")
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.boxplot(data=df2, y=varBox, ax=ax)
+        
+        st.pyplot(fig)
+
+    with PieChart:
+        st.markdown("## :blue[Pie Chart]")
+
+        varPie = st.selectbox("Choose a variable:", df3.columns, key="piechart_var")
+        
+        pie_data = df3[varPie].value_counts()
+        
+        fig, ax = plt.subplots(figsize=(8, 8))
+        ax.pie(pie_data, labels=pie_data.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette("pastel"))
+        
+        st.pyplot(fig)
 
 if app_mode == "Logistic Regression":
    
