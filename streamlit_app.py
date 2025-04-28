@@ -171,11 +171,18 @@ if app_mode == "Data Visualization":
     df3 = df_original[['Gender', 'Customer Type', 'Type of Travel', 'Class', 'Satisfaction']]
 
     with HeatMap:
-        st.markdown("## :blue[Correlation Heatmap]")
-        
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.heatmap(df2.corr(), annot=True, cmap="Blues", linewidths=0.5, ax=ax)
-        
+        default_vars = ['Age','Satisfaction','Type of Travel']
+        all_vars = ['Gender','Customer Type','Age','Type of Travel','Class','Flight Distance','Inflight wifi service','Departure/Arrival time convenient','Ease of Online booking','Gate location','Food and drink','Online boarding','Seat comfort','Inflight entertainment','On-board service','Leg room service','Baggage handling','Checkin service','Inflight service','Cleanliness','Departure Delay in Minutes','Arrival Delay in Minutes','Satisfaction']
+        other_vars = [var for var in all_vars if var not in default_vars]
+        additional_vars = st.multiselect(
+        "Add more variables to the correlation matrix:",
+        options=other_vars)
+        selected_vars = default_vars + additional_vars
+        fig_width = max(8,len(selected_vars))
+        fig_height = max(6,len(selected_vars))
+        corr_matrix = df[selected_vars].corr()
+        fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+        sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", linewidths=0.5, ax=ax)
         st.pyplot(fig)
 
     with countPlots:
