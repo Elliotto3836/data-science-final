@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, precision_score, accuracy_score
 from pycaret.classification import setup, compare_models, pull
 import os
 from streamlit_extras.let_it_rain import rain
@@ -215,13 +215,15 @@ if app_mode == "Logistic Regression":
     log.fit(X_train,y_train)
     predictions = log.predict(X_test)
     
-    from sklearn.metrics import mean_absolute_error, r2_score, accuracy_score
+    
 
     accuracy = accuracy_score(y_test, predictions)
+    precision = precision_score(y_test, predictions)
 
     st.markdown("### Model Evaluation Metrics")
 
     st.write(f"**Accuracy**: {accuracy:.4f}")
+    st.write(f"**Accuracy**: {precision:.4f}")
 
 
 
@@ -245,14 +247,11 @@ if app_mode == "Decision Tree 🌳":
     y_pred_tree = model.predict(X_test_tree)
 
     # Metrics
-    mae = mean_absolute_error(y_test_tree, y_pred_tree)
-    mse = mean_squared_error(y_test_tree, y_pred_tree)
-    rmse = np.sqrt(mse)
-    accuracy = metrics.accuracy_score(y_test_tree, y_pred_tree)
+    precision = precision_score(y_test_tree, y_pred_tree)
+    accuracy = accuracy_score(y_test_tree, y_pred_tree)
 
     st.success(f"Accuracy: {accuracy:.4f}")
-    st.success(f"mae: {mae:.4f}")
-    st.success(f"mse: {mse:.4f}")
+    st.success(f"Precision: {precision:.4f}")
 
     st.markdown("## Cross-Validated Accuracy")
     cv_scores = cross_val_score(model, X_tree, y_tree, cv=5, scoring='accuracy')
@@ -284,14 +283,11 @@ if app_mode == "Decision Tree 🌳":
     y_pred_tree = model.predict(X_test_tree)
 
     # Metrics
-    mae = mean_absolute_error(y_test_tree, y_pred_tree)
-    mse = mean_squared_error(y_test_tree, y_pred_tree)
-    rmse = np.sqrt(mse)
-    accuracy = metrics.accuracy_score(y_test_tree, y_pred_tree)
+    precision = precision_score(y_test_tree, y_pred_tree)
+    accuracy = accuracy_score(y_test_tree, y_pred_tree)
 
     st.success(f"Accuracy: {accuracy:.4f}")
-    st.success(f"mae: {mae:.4f}")
-    st.success(f"mse: {mse:.4f}")
+    st.success(f"Precision: {precision:.4f}")
 
     dot_data = export_graphviz(
     model,
