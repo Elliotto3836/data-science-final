@@ -1,13 +1,14 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from streamlit_extras.let_it_rain import rain
-import streamlit.components.v1 as components
 from pycaret.classification import setup, compare_models, pull
 import os
+from streamlit_extras.let_it_rain import rain
+from streamlit_extras.dataframe_explorer import dataframe_explorer
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import metrics
@@ -97,6 +98,11 @@ if app_mode == "Business Case and Data Presentation":
     st.write("(From this point on, we will convert the non-numerical variables to numerical variables through the label encoder function for the purposes of data presentation and model prediction.)")
     st.markdown("## :blue[🔍 Description of the Data]")
     st.dataframe(df.describe())
+
+    st.markdown("## :blue[Filter Data]")
+    filtered_df = dataframe_explorer(df_original, case=False)
+    st.dataframe(filtered_df, use_container_width=True)
+
     st.markdown("## :blue[Variables Used]")
 
     features = {
@@ -149,6 +155,7 @@ if app_mode == "Business Case and Data Presentation":
         st.components.v1.html(html_content, height=800,scrolling=True)  # Adjust height as needed
     else:
         st.write("HTML report not found. Please generate the report first.") 
+
 
 if app_mode == "Data Visualization":
     st.dataframe(df.head(5))
@@ -223,13 +230,15 @@ if app_mode == "Decision Tree 🌳":
     # Prepare features and target
 
     #First just doing 3 and 10 as examples. Since 3 is a good graph and 10 is the most accurate
+    max_depth_user = st.slider("Select max_depth for Decision Tree:", min_value=1, max_value=20, value=3)
+
     X_tree = df.drop(["Satisfaction"], axis=1)
     y_tree = df["Satisfaction"]
 
     # Train-test split
     X_train_tree, X_test_tree, y_train_tree, y_test_tree = train_test_split(X_tree, y_tree, test_size=0.2, random_state=1)
 
-    model = DecisionTreeClassifier(max_depth=3, random_state=1)
+    model = DecisionTreeClassifier(max_depth=max_depth_user, random_state=1)
     model.fit(X_train_tree, y_train_tree)
     y_pred_tree = model.predict(X_test_tree)
 
@@ -239,7 +248,6 @@ if app_mode == "Decision Tree 🌳":
     rmse = np.sqrt(mse)
     accuracy = metrics.accuracy_score(y_test_tree, y_pred_tree)
 
-    st.markdown("This is for max_depth = 3, just as an example")
     st.success(f"Accuracy: {accuracy:.4f}")
     st.success(f"mae: {mae:.4f}")
     st.success(f"mse: {mse:.4f}")
@@ -260,6 +268,7 @@ if app_mode == "Decision Tree 🌳":
 
     #max depth 10
 
+    st.markdown("-----")
     st.markdown("This is for max_depth = 10, which was the most accurate according to my hyperparameter tuning")
 
 
@@ -289,7 +298,13 @@ if app_mode == "Decision Tree 🌳":
     graph = graphviz.Source(dot_data)
     st.graphviz_chart(graph)
 
+    st.markdown("-----")
+
+    st.markdown("# Decision Tree Accuracy vs Max Depth")
+    
     st.image("DecisionTreeAccuracy.png")
+
+    st.markdown("## Mlflow Results")
 
     st.image("MLFlowData.png")
 
