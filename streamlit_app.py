@@ -87,7 +87,6 @@ df_original = pd.read_csv("airline.csv")
 # Turns categorical variables into numbers
 #df is the one with numbers, original has the label
 df=df_original.copy()
-df_original = df_original.drop
 label_encoders = {}
 
 for column in df.columns:
@@ -108,7 +107,6 @@ if app_mode == "Business Case and Data Presentation":
     "helpful for an airpline company to determine what they need to prioritize.")
     num = st.slider("Select number of rows to view", min_value=5, max_value=100, value=10)
     st.dataframe(df_original.head(num))
-
     st.write("(From this point on, we will convert the non-numerical variables to numerical variables through the label encoder function for the purposes of data presentation and model prediction.)")
     st.markdown("## :blue[🔍 Description of the Data]")
     st.dataframe(df.describe())
