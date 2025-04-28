@@ -86,7 +86,7 @@ for column in df.columns:
 
 
 
-app_mode = st.sidebar.selectbox("Select a page",["Business Case and Data Presentation","Data Visualization","Logistic Regression","Models","Feature Importance / AI Explainability", "AutoML with PyCaret"])
+app_mode = st.sidebar.selectbox("Select a page",["Business Case and Data Presentation","Data Visualization","Models","Feature Importance / AI Explainability", "AutoML with PyCaret"])
 
 
 if app_mode == "Business Case and Data Presentation":
