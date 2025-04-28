@@ -165,15 +165,10 @@ if app_mode == "Data Visualization":
     st.write("Please find below graphs that further underscore significant details and correlations in our dataset.")
 
 
-    countPlots, HeatMap, BoxAndWhisker, PieChart, pairPlot = st.tabs(["Count Plots", "Heat Map", "Box and Whisker Plots", "Pie Charts", "Pairplot"])
+    countPlots, HeatMap, BoxAndWhisker, PieChart = st.tabs(["Count Plots", "Heat Map", "Box and Whisker Plots", "Pie Charts"])
 
     df2 = df[['Age', 'Flight Distance', 'Inflight wifi service', 'Departure/Arrival time convenient', 'Ease of Online booking', 'Gate location', 'Food and drink', 'Online boarding', 'Seat comfort', 'Inflight entertainment', 'On-board service', 'Leg room service', 'Baggage handling', 'Checkin service', 'Inflight service', 'Cleanliness', 'Departure Delay in Minutes', 'Arrival Delay in Minutes']]
     df3 = df_original[['Gender', 'Customer Type', 'Type of Travel', 'Class', 'Satisfaction']]
-
-    with pairPlot:
-        st.markdown("## :blue[Pairplot]")
-        fig = sns.pairplot(df2)
-        st.pyplot(fig)
 
     with HeatMap:
         st.markdown("## :blue[Correlation Heatmap]")
