@@ -107,6 +107,7 @@ if app_mode == "Business Case and Data Presentation":
     "helpful for an airpline company to determine what they need to prioritize.")
     num = st.slider("Select number of rows to view", min_value=5, max_value=100, value=10)
     st.dataframe(df_original.head(num))
+    
     st.write("(From this point on, we will convert the non-numerical variables to numerical variables through the label encoder function for the purposes of data presentation and model prediction.)")
     st.markdown("## :blue[🔍 Description of the Data]")
     st.dataframe(df.describe())
@@ -446,7 +447,7 @@ if app_mode == "AutoML with PyCaret":
 
     st.markdown("""PyCaret will automatically try different models and then select the best one.""")
 
-    if st.button("Test Multiple Models using PyCaret"):
+    if st.sidebar.button("Test Multiple Models using PyCaret"):
 
         # Prepare the data
         df_pycaret = df.dropna()  # PyCaret needs no missing values
