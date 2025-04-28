@@ -10,6 +10,7 @@ import os
 from streamlit_extras.let_it_rain import rain
 from streamlit_extras.dataframe_explorer import dataframe_explorer
 
+from sklearn.model_selection import cross_val_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import metrics
 import matplotlib.pyplot as plt
@@ -240,6 +241,7 @@ if app_mode == "Decision Tree 🌳":
 
     model = DecisionTreeClassifier(max_depth=max_depth_user, random_state=1)
     model.fit(X_train_tree, y_train_tree)
+    
     y_pred_tree = model.predict(X_test_tree)
 
     # Metrics
@@ -251,6 +253,11 @@ if app_mode == "Decision Tree 🌳":
     st.success(f"Accuracy: {accuracy:.4f}")
     st.success(f"mae: {mae:.4f}")
     st.success(f"mse: {mse:.4f}")
+
+    st.markdown("## Cross-Validated Accuracy")
+    cv_scores = cross_val_score(model, X_tree, y_tree, cv=5, scoring='accuracy')
+    mean_cv_accuracy = np.mean(cv_scores)
+    st.success(f"Mean CV Accuracy: {mean_cv_accuracy:.4f}")
 
     dot_data = export_graphviz(
     model,
@@ -428,7 +435,6 @@ if app_mode == "Feature Importance / AI Explainability":
     X_scaled = scaler.fit_transform(X)
 
     X_train_SHAP, X_test_SHAP, y_train_SHAP, y_test_SHAP = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
-
     model = LogisticRegression(max_iter=1000, random_state=1)
     model.fit(X_train_SHAP, y_train_SHAP)
 
@@ -441,6 +447,8 @@ if app_mode == "Feature Importance / AI Explainability":
     plt.title("Feature Importance for the Satisfaction Prediction (Logistic Regression)", fontsize=16)
 
     st.pyplot(fig)
+
+
 
 
 if app_mode == "AutoML with PyCaret":
