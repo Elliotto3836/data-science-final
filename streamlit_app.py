@@ -190,15 +190,15 @@ if app_mode == "Business Case and Data Presentation":
 # if app_mode == "Data Visualization":
 #     st.dataframe(df.head(5))
 if app_mode == "Data Visualization":
-    st.image("AirFranceInterior.png")
+    df2 = df[['Age', 'Flight Distance', 'Inflight wifi service', 'Departure/Arrival time convenient', 'Ease of Online booking', 'Gate location', 'Food and drink', 'Online boarding', 'Seat comfort', 'Inflight entertainment', 'On-board service', 'Leg room service', 'Baggage handling', 'Checkin service', 'Inflight service', 'Cleanliness', 'Departure Delay in Minutes', 'Arrival Delay in Minutes']]
+    df3 = df_original[['Gender', 'Customer Type', 'Type of Travel', 'Class', 'Satisfaction']]
+    st.image("Check.png")
     st.markdown("# 📊 Data Visualization:")
     st.write("Please find below graphs that further underscore significant details and correlations in our dataset.")
 
 
     countPlots, HeatMap, BoxAndWhisker, PieChart = st.tabs(["Count Plots", "Heat Map", "Box and Whisker Plots", "Pie Charts"])
 
-    df2 = df[['Age', 'Flight Distance', 'Inflight wifi service', 'Departure/Arrival time convenient', 'Ease of Online booking', 'Gate location', 'Food and drink', 'Online boarding', 'Seat comfort', 'Inflight entertainment', 'On-board service', 'Leg room service', 'Baggage handling', 'Checkin service', 'Inflight service', 'Cleanliness', 'Departure Delay in Minutes', 'Arrival Delay in Minutes']]
-    df3 = df_original[['Gender', 'Customer Type', 'Type of Travel', 'Class', 'Satisfaction']]
 
     with HeatMap:
         default_vars = ['Age','Satisfaction','Type of Travel']
@@ -211,16 +211,10 @@ if app_mode == "Data Visualization":
         fig_width = max(8,len(selected_vars))
         fig_height = max(6,len(selected_vars))
         corr_matrix = df[selected_vars].corr()
-        fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+        fig, ax = plt.subplots(figsize=(10, 8))
         sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", linewidths=0.5, ax=ax)
         st.pyplot(fig)
 
-    # with countPlots:
-    #     st.markdown("## :blue[Bar Plot]")
-    #     varCount = st.selectbox("Choose a variable:", df2.columns, key="countplot_var")
-    #     fig, ax = plt.subplots(figsize=(10, 6))
-    #     sns.countplot(data=df2, x=varCount, ax=ax)
-    #     st.pyplot(fig)
     with countPlots:
         st.markdown("## :blue[Bar Plot]")
         varCount = st.selectbox("Choose a variable:", df2.columns, key="countplot_var")
@@ -231,27 +225,24 @@ if app_mode == "Data Visualization":
             labels = [f"{i}-{i+4}" for i in bins[:-1]]
             df2['Age Group'] = pd.cut(df2['Age'], bins=bins, labels=labels, right=False)
         
-            fig, ax = plt.subplots(figsize=(10, 6))
+            fig, ax = plt.subplots(figsize=(10, 8))
             sns.countplot(data=df2, x='Age Group', ax=ax, order=labels)
             ax.set_xlabel("Age Group")
             ax.set_ylabel("Count")
             plt.xticks(rotation=45)
+            st.pyplot(fig)
         else:
-            fig, ax = plt.subplots(figsize=(10, 6))
+            fig, ax = plt.subplots(figsize=(10, 8))
             sns.countplot(data=df2, x=varCount, ax=ax)
             plt.xticks(rotation=45)
-
-    st.pyplot(fig)
-
-
-
+            st.pyplot(fig)
 
     with BoxAndWhisker:
         st.markdown("## :blue[Box and Whisker Plot]")
         
         varBox = st.selectbox("Choose a variable:", df2.columns, key="boxplot_var")
         
-        fig, ax = plt.subplots(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(10, 8))
         sns.boxplot(data=df2, y=varBox, ax=ax)
         
         st.pyplot(fig)
@@ -263,13 +254,12 @@ if app_mode == "Data Visualization":
         
         pie_data = df3[varPie].value_counts()
         
-        fig, ax = plt.subplots(figsize=(8, 8))
+        fig, ax = plt.subplots(figsize=(10, 8))
         ax.pie(pie_data, labels=pie_data.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette("pastel"))
         
         st.pyplot(fig)
 
 if app_mode == "Models":
-    st.image("Fancy.jpg")
     model_choice = st.sidebar.selectbox("Choose a Model to Run:",("Logistic Regression 📈","Decision Tree 🌳"))
 
     # Drop 'id' if exists
@@ -282,164 +272,172 @@ if app_mode == "Models":
     X = df.drop("Satisfaction", axis=1)
     y = df["Satisfaction"]
 
-
+    st.image("FancyNew.jpg")
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
     if model_choice == "Logistic Regression 📈":
-        st.header(":blue[Logistic Regression Classifier 📈]")
-
-        fig2, ax = plt.subplots()
-        sns.countplot(data=df, x="Satisfaction")
-        st.pyplot(fig2)
-
+        if st.sidebar.button("Run model"):
+        
+    
+        # Plot class distribution (using existing df)
+        # st.markdown("### Class Distribution in Target (Satisfaction)")
+        # fig2, ax2 = plt.subplots(figsize=(10, 8))
+        # sns.countplot(data=df, x="Satisfaction", ax=ax2)
+        # ax2.set_title("Distribution of Satisfaction Classes")
+        # st.pyplot(fig2)
+    
         # Train/Test Split
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+        
+            # # Fit the logistic regression model
+            log_model = LogisticRegression()
+            log_model.fit(X_train, y_train)
+            predictions = log_model.predict(X_test)
+        
+            # # Evaluation metrics
+            accuracy = accuracy_score(y_test, predictions)
+            precision = precision_score(y_test, predictions, zero_division=0)  # avoids error if no positives predicted
+        
+            # Feature importance via coefficients
+            st.markdown("### Feature Importance")
+            coef = pd.DataFrame(log_model.coef_[0], index=X.columns, columns=["Coefficient"])
+            coef = coef.sort_values(by="Coefficient", ascending=False)
+        
+            fig3, ax3 = plt.subplots(figsize=(10, 8))
+            sns.barplot(x=coef["Coefficient"], y=coef.index, palette="pastel", ax=ax3)
+            ax3.set_title("Logistic Regression Feature Coefficients")
+    
+            
+            st.header(":blue[Logistic Regression Classifier 📈]")
+        
+            st.markdown("### Model Evaluation Metrics")
+            st.success(f"Accuracy: {accuracy:.4f}")
+            st.success(f"Precision: {precision:.4f}")
+            st.dataframe(coef.style.background_gradient(cmap='Blues'))
+    
+            st.pyplot(fig3)
 
-        log_model = LogisticRegression()
-        log_model.fit(X_train, y_train)
-        predictions = log_model.predict(X_test)
-
-        accuracy = accuracy_score(y_test, predictions)
-        precision = precision_score(y_test, predictions)
-
-        st.markdown("### Model Evaluation Metrics")
-        st.success(f"Accuracy: {accuracy:.4f}")
-        st.success(f"Precision: {precision:.4f}")
-
-        # Coefficients plot
-        coef = pd.DataFrame(log_model.coef_[0], X.columns, columns=["Coefficient"])
-        coef = coef.sort_values(by="Coefficient", ascending=False)
-
-        st.markdown("### Feature Importance")
-        st.dataframe(coef)
-
-        fig, ax = plt.subplots(figsize=(8, 6))
-        coef.plot(kind="bar", ax=ax, color="skyblue")
-        plt.title("Logistic Regression Feature Coefficients")
-        plt.xlabel("Features")
-        plt.ylabel("Coefficient Value")
-        st.pyplot(fig)
 
     elif model_choice == "Decision Tree 🌳":
-        st.header(":blue[Decision Tree Classifier 🌳]")
-
-        # Choose max depth
         max_depth_user = st.sidebar.slider("Select max_depth:", min_value=1, max_value=20, value=3)
-
-        # Train/Test Split
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
-
-        model = DecisionTreeClassifier(max_depth=max_depth_user, random_state=1)
-        model.fit(X_train, y_train)
-
-        y_pred = model.predict(X_test)
-
-        # Metrics
-        precision = precision_score(y_test, y_pred)
-        accuracy = accuracy_score(y_test, y_pred)
-
-        st.success(f"Accuracy: {accuracy:.4f}")
-        st.success(f"Precision: {precision:.4f}")
-
-        # Cross-validation
-        st.markdown("## Cross-Validated Accuracy")
-        cv_scores = cross_val_score(model, X, y, cv=5, scoring='accuracy')
-        mean_cv_accuracy = np.mean(cv_scores)
-        st.success(f"Mean CV Accuracy: {mean_cv_accuracy:.4f}")
-
-        # Show Tree
-        st.markdown("## Decision Tree Diagram")
-        dot_data = export_graphviz(
-            model,
-            out_file=None,
-            feature_names=X.columns,
-            class_names=['0', '1'],
-            filled=True,
-            rounded=True,
-            special_characters=True
-        )
-        graph = graphviz.Source(dot_data)
-        st.graphviz_chart(graph)
-
-        st.markdown("----")
-        if st.sidebar.button("Run Full Decision Tree Hyperparameter Tuning (MLflow + Dagshub)"):
-            dagshub.init(repo_owner='Elliotto3836', repo_name='Final', mlflow=True)
-            param_grid = {"max_depth": list(range(1, 21))}
-
-            grid_search = GridSearchCV(
-                DecisionTreeClassifier(random_state=1),
-                param_grid,
-                cv=5,
-                scoring='accuracy'
+        if st.sidebar.button("Run model"):
+            st.header(":blue[Decision Tree Classifier 🌳]")
+    
+            # Choose max depth
+    
+            # Train/Test Split
+    
+            model = DecisionTreeClassifier(max_depth=max_depth_user, random_state=1)
+            model.fit(X_train, y_train)
+    
+            y_pred = model.predict(X_test)
+    
+            # Metrics
+            precision = precision_score(y_test, y_pred)
+            accuracy = accuracy_score(y_test, y_pred)
+    
+            st.success(f"Accuracy: {accuracy:.4f}")
+            st.success(f"Precision: {precision:.4f}")
+    
+            # Cross-validation
+            st.markdown("## Cross-Validated Accuracy")
+            cv_scores = cross_val_score(model, X, y, cv=5, scoring='accuracy')
+            mean_cv_accuracy = np.mean(cv_scores)
+            st.success(f"Mean CV Accuracy: {mean_cv_accuracy:.4f}")
+    
+            # Show Tree
+            st.markdown("## Decision Tree Diagram")
+            dot_data = export_graphviz(
+                model,
+                out_file=None,
+                feature_names=X.columns,
+                class_names=['0', '1'],
+                filled=True,
+                rounded=True,
+                special_characters=True
             )
-
-            mlflow.start_run()
-
-            grid_search.fit(X_train, y_train)
-
-            for max_depth in param_grid["max_depth"]:
-                name = f"Decision Tree {max_depth}"
-                with mlflow.start_run(nested=True, run_name=name):
-                    model = DecisionTreeClassifier(max_depth=max_depth, random_state=1)
-                    model.fit(X_train, y_train)
-                    y_pred = model.predict(X_test)
-
-                    mae = mean_absolute_error(y_test, y_pred)
-                    mse = mean_squared_error(y_test, y_pred)
-                    rmse = np.sqrt(mse)
-                    acc = accuracy_score(y_test, y_pred)
-
-                    mlflow.log_param("model_name", "DecisionTree")
-                    mlflow.log_param("max_depth", max_depth)
-                    mlflow.log_params(model.get_params())
-                    mlflow.log_metric("accuracy", acc)
-                    mlflow.log_metric("mae", mae)
-                    mlflow.log_metric("mse", mse)
-                    mlflow.log_metric("rmse", rmse)
-
-                    # Visualization
-                    dot_data = export_graphviz(
-                        model,
-                        out_file=None,
-                        feature_names=X.columns,
-                        class_names=['0', '1'],
-                        filled=True,
-                        rounded=True,
-                        special_characters=True
-                    )
-                    graph = graphviz.Source(dot_data)
-                    st.graphviz_chart(graph)
-
-            mlflow.end_run()
-
-            # Best results
-            best_max_depth = grid_search.best_params_["max_depth"]
-            best_accuracy = grid_search.best_score_
-
-            st.success(f"Best Max Depth: {best_max_depth}")
-            st.success(f"Best Cross-Validated Accuracy: {best_accuracy:.4f}")
-
-            # Plot
-            results = grid_search.cv_results_
-            max_depths = results["param_max_depth"]
-            mean_scores = results["mean_test_score"]
-
-            fig, ax = plt.subplots()
-            ax.plot(max_depths, mean_scores, marker='o')
-            ax.set_title("Decision Tree Accuracy vs Max Depth")
-            ax.set_xlabel("Max Depth")
-            ax.set_ylabel("Cross-Validated Accuracy")
-            ax.grid(True)
-            st.pyplot(fig)
-
-        st.markdown("# Decision Tree Accuracy vs Max Depth")
-
-        st.image("DecisionTreeAccuracy.png")
-
-        st.markdown("## Mlflow Results")
-
-        st.image("MLFlowData.png")
-        
+            graph = graphviz.Source(dot_data)
+            st.graphviz_chart(graph)
+    
+            st.markdown("----")
+            if st.sidebar.button("Run Full Decision Tree Hyperparameter Tuning (MLflow + Dagshub)"):
+                dagshub.init(repo_owner='Elliotto3836', repo_name='Final', mlflow=True)
+                param_grid = {"max_depth": list(range(1, 21))}
+    
+                grid_search = GridSearchCV(
+                    DecisionTreeClassifier(random_state=1),
+                    param_grid,
+                    cv=5,
+                    scoring='accuracy'
+                )
+    
+                mlflow.start_run()
+    
+                grid_search.fit(X_train, y_train)
+    
+                for max_depth in param_grid["max_depth"]:
+                    name = f"Decision Tree {max_depth}"
+                    with mlflow.start_run(nested=True, run_name=name):
+                        model = DecisionTreeClassifier(max_depth=max_depth, random_state=1)
+                        model.fit(X_train, y_train)
+                        y_pred = model.predict(X_test)
+    
+                        mae = mean_absolute_error(y_test, y_pred)
+                        mse = mean_squared_error(y_test, y_pred)
+                        rmse = np.sqrt(mse)
+                        acc = accuracy_score(y_test, y_pred)
+    
+                        mlflow.log_param("model_name", "DecisionTree")
+                        mlflow.log_param("max_depth", max_depth)
+                        mlflow.log_params(model.get_params())
+                        mlflow.log_metric("accuracy", acc)
+                        mlflow.log_metric("mae", mae)
+                        mlflow.log_metric("mse", mse)
+                        mlflow.log_metric("rmse", rmse)
+    
+                        # Visualization
+                        dot_data = export_graphviz(
+                            model,
+                            out_file=None,
+                            feature_names=X.columns,
+                            class_names=['0', '1'],
+                            filled=True,
+                            rounded=True,
+                            special_characters=True
+                        )
+                        graph = graphviz.Source(dot_data)
+                        st.graphviz_chart(graph)
+    
+                mlflow.end_run()
+    
+                # Best results
+                best_max_depth = grid_search.best_params_["max_depth"]
+                best_accuracy = grid_search.best_score_
+    
+                st.success(f"Best Max Depth: {best_max_depth}")
+                st.success(f"Best Cross-Validated Accuracy: {best_accuracy:.4f}")
+    
+                # Plot
+                results = grid_search.cv_results_
+                max_depths = results["param_max_depth"]
+                mean_scores = results["mean_test_score"]
+    
+                fig, ax = plt.subplots()
+                ax.plot(max_depths, mean_scores, marker='o')
+                ax.set_title("Decision Tree Accuracy vs Max Depth")
+                ax.set_xlabel("Max Depth")
+                ax.set_ylabel("Cross-Validated Accuracy")
+                ax.grid(True)
+                st.pyplot(fig)
+    
+            st.markdown("# Decision Tree Accuracy vs Max Depth")
+    
+            st.image("DecisionTreeAccuracy.png")
+    
+            st.markdown("## Mlflow Results")
+    
+            st.image("MLFlowData.png")
+            
 if app_mode == "Feature Importance / AI Explainability":
-    st.image("AirFranceExterior.png")
+
     import shap
     from streamlit_shap import st_shap
     import pandas as pd
@@ -449,34 +447,43 @@ if app_mode == "Feature Importance / AI Explainability":
     from sklearn.model_selection import train_test_split
     from sklearn.preprocessing import StandardScaler
 
-    st.markdown("### AI Explainability ")
+    st.markdown("### AI Explainability")
 
     dfShap = df.dropna()
 
     X = dfShap.drop("Satisfaction", axis=1)
     y = dfShap["Satisfaction"]
+    st.image("AirfranceExterior.jpg")
 
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
+    if st.sidebar.button("Run SHAP"):
+    
+        scaler = StandardScaler()
+        X_scaled_array = scaler.fit_transform(X)
+        
+        # Convert back to DataFrame to keep column names
+        X_scaled = pd.DataFrame(X_scaled_array, columns=X.columns)
+    
+        # Split the named DataFrame
+        X_train_SHAP, X_test_SHAP, y_train_SHAP, y_test_SHAP = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+    
+        model = LogisticRegression(max_iter=1000, random_state=1)
+        model.fit(X_train_SHAP, y_train_SHAP)
+    
+        explainer = shap.Explainer(model, X_train_SHAP)
+        shap_values = explainer(X_test_SHAP)
+        
+        # Plot with actual feature names
+        st.markdown("#### SHAP Summary Plot")
+        fig, ax = plt.subplots(figsize=(10, 8))
+        shap.summary_plot(shap_values, X_test_SHAP, plot_type="dot", show=False)
+        st.pyplot(fig)
+    
 
-    X_train_SHAP, X_test_SHAP, y_train_SHAP, y_test_SHAP = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
-    model = LogisticRegression(max_iter=1000, random_state=1)
-    model.fit(X_train_SHAP, y_train_SHAP)
-
-    explainer = shap.Explainer(model, X_train_SHAP)
-    shap_values = explainer(X_test_SHAP)
-
-    fig = plt.figure(figsize=(10, 6))
-    shap.summary_plot(shap_values.values, X_test_SHAP, feature_names=X.columns, plot_type="dot", show=False)
-
-    plt.title("Feature Importance for the Satisfaction Prediction (Logistic Regression)", fontsize=16)
-
-    st.pyplot(fig)
 
 
 
 if app_mode == "AutoML with PyCaret":
-    st.image("zooooooom.jpg")
+    st.image("HighQualityAirfrance.png")
     st.title("🔮 AutoML with PyCaret")
     st.markdown("""PyCaret will automatically try different models and then select the best one. The results are cached so the tests do not have to be re-run every time.""")
 
@@ -495,4 +502,3 @@ if app_mode == "AutoML with PyCaret":
             st.write(best_model)
         except Exception as e:
             st.error(f"Error: {e}")
-
