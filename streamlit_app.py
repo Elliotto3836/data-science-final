@@ -20,6 +20,23 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split, GridSearchCV
 import graphviz
 
+@st.cache_data
+def compare_and_cache_models(df):
+    # Prepare the data
+    df_pycaret = df.dropna()  # PyCaret needs no missing values
+    df_pycaret = df_pycaret.drop(columns=['id'], errors='ignore')  # Drop id column if still exists
+
+    # Setup PyCaret
+    clf = setup(data=df_pycaret, target='Satisfaction', session_id=123)
+
+    # Compare different models
+    best_model = compare_models()
+
+    # Pull the comparison results
+    comparison_df = pull()
+    comparison_df = comparison_df.sort_values(by='Accuracy', ascending=False)
+
+    return comparison_df, best_model
 
 #git add .
 #git commit -am "Message here"
@@ -78,9 +95,7 @@ st.markdown("""
 
 st.markdown('<div class="center"><div class="rainbow-text">Airline Satisfaction!</div></div>', unsafe_allow_html=True)
 
-st.markdown("<h1 style='text-align: center; color: skyblue;'>By Elliot, Katie, and Kanishk</h1>", unsafe_allow_html=True)
 
-st.image("HighQualityAirfrance.png")
 
 df_original = pd.read_csv("airline.csv")
 
@@ -101,10 +116,12 @@ app_mode = st.sidebar.selectbox("Select a page",["Business Case and Data Present
 
 
 if app_mode == "Business Case and Data Presentation":
+    st.image("HighQualityAirfrance.png")
+    st.markdown("<h1 style='text-align: center; color: skyblue;'>By Elliot, Katie, and Kanishk</h1>", unsafe_allow_html=True)
     rain(emoji="🛩️",font_size=54,falling_speed=5,animation_length="10",)
     st.markdown("# :blue[📊 Introduction:]")
     st.write("We will be analyzing the Airplane data, we will be predicting whether or not a customer will be satisfied or not. This would be extremely"
-    "helpful for an airpline company to determine what they need to prioritize.")
+    "helpful for an airpline company to determine what they need to prioritize in order to improve customer satisfaction.")
     num = st.slider("Select number of rows to view", min_value=5, max_value=100, value=10)
     st.dataframe(df_original.head(num))
     
@@ -173,6 +190,7 @@ if app_mode == "Business Case and Data Presentation":
 # if app_mode == "Data Visualization":
 #     st.dataframe(df.head(5))
 if app_mode == "Data Visualization":
+    st.image("AirFranceInterior.png")
     st.markdown("# 📊 Data Visualization:")
     st.write("Please find below graphs that further underscore significant details and correlations in our dataset.")
 
@@ -251,6 +269,7 @@ if app_mode == "Data Visualization":
         st.pyplot(fig)
 
 if app_mode == "Models":
+    st.image("Fancy.jpg")
     model_choice = st.sidebar.selectbox("Choose a Model to Run:",("Logistic Regression 📈","Decision Tree 🌳"))
 
     # Drop 'id' if exists
@@ -284,6 +303,20 @@ if app_mode == "Models":
         st.markdown("### Model Evaluation Metrics")
         st.success(f"Accuracy: {accuracy:.4f}")
         st.success(f"Precision: {precision:.4f}")
+
+        # Coefficients plot
+        coef = pd.DataFrame(log_model.coef_[0], X.columns, columns=["Coefficient"])
+        coef = coef.sort_values(by="Coefficient", ascending=False)
+
+        st.markdown("### Feature Importance")
+        st.dataframe(coef)
+
+        fig, ax = plt.subplots(figsize=(8, 6))
+        coef.plot(kind="bar", ax=ax, color="skyblue")
+        plt.title("Logistic Regression Feature Coefficients")
+        plt.xlabel("Features")
+        plt.ylabel("Coefficient Value")
+        st.pyplot(fig)
 
     elif model_choice == "Decision Tree 🌳":
         st.header(":blue[Decision Tree Classifier 🌳]")
@@ -406,6 +439,7 @@ if app_mode == "Models":
         st.image("MLFlowData.png")
         
 if app_mode == "Feature Importance / AI Explainability":
+    st.image("AirFranceExterior.png")
     import shap
     from streamlit_shap import st_shap
     import pandas as pd
@@ -441,34 +475,24 @@ if app_mode == "Feature Importance / AI Explainability":
 
 
 
-
 if app_mode == "AutoML with PyCaret":
+    st.image("zooooooom.jpg")
     st.title("🔮 AutoML with PyCaret")
-
-    st.markdown("""PyCaret will automatically try different models and then select the best one.""")
+    st.markdown("""PyCaret will automatically try different models and then select the best one. The results are cached so the tests do not have to be re-run every time.""")
 
     if st.sidebar.button("Test Multiple Models using PyCaret"):
+        # Check if the cached results exist
+        try:
+            # This will use the cached results if available
+            comparison_df, best_model = compare_and_cache_models(df)
 
-        # Prepare the data
-        df_pycaret = df.dropna()  # PyCaret needs no missing values
-        df_pycaret = df_pycaret.drop(columns=['id'])  # Drop id column if still exists
+            # Show the comparison table
+            st.markdown("### 📋 Model Comparison Results")
+            st.dataframe(comparison_df)
 
-        # Setup PyCaret
-        clf = setup(data=df_pycaret, target='Satisfaction', session_id=123)
+            # Show the best model
+            st.markdown("### 🏆 Best Model Found")
+            st.write(best_model)
+        except Exception as e:
+            st.error(f"Error: {e}")
 
-        # Compare different models
-        best_model = compare_models()
-
-        # Show the comparison table
-        st.markdown("### 📋 Model Comparison Results")
-        comparison_df = pull()
-        #comparison_df = comparison_df[['Model', 'Accuracy', 'Kappa', 'TT', 'PT']]
-        comparison_df = comparison_df.sort_values(by='Accuracy', ascending=False)
-
-        st.dataframe(comparison_df)
-
-
-
-        # Show the best model
-        st.markdown("### 🏆 Best Model Found")
-        st.write(best_model)
